@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, TextInput, FlatList, TouchableOpacity, StyleSheet, Alert, ActivityIndicator, SafeAreaView } from 'react-native';
+import { View, Text, TextInput, FlatList, TouchableOpacity, StyleSheet, Alert, ActivityIndicator, SafeAreaView, Platform, StatusBar } from 'react-native';
 import { todosApi, storage, type Todo } from '../services/api';
 
 interface Props {
@@ -141,6 +141,7 @@ export function TodoListScreen({ onLogout }: Props) {
         data={todos} 
         keyExtractor={i => i.id} 
         renderItem={renderItem} 
+        contentInsetAdjustmentBehavior="automatic"
         contentContainerStyle={styles.list} 
         ListEmptyComponent={<Text style={styles.empty}>暂无待办</Text>}
       />
@@ -155,7 +156,7 @@ export function TodoListScreen({ onLogout }: Props) {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#fafafa' },
+  container: { flex: 1, backgroundColor: '#fafafa', paddingTop: Platform.OS === 'android' ? (StatusBar.currentHeight ?? 0) : 0 },
   loader: { flex: 1 },
   header: { flexDirection: 'row', justifyContent: 'center', alignItems: 'center', paddingHorizontal: 24, paddingVertical: 20 },
   titleRow: { flexDirection: 'row', alignItems: 'center', gap: 12 },

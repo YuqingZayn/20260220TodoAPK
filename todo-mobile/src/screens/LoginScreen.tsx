@@ -32,6 +32,11 @@ export function LoginScreen({ onLogin }: Props) {
     } catch {}
   };
 
+  const handleToggleRememberPassword = (value: boolean) => {
+    setRememberPassword(value);
+    if (value) setRememberEmail(true);
+  };
+
   const handleSendCode = async () => {
     if (!email) { Alert.alert('提示', '请输入邮箱'); return; }
     setLoading(true);
@@ -97,7 +102,7 @@ export function LoginScreen({ onLogin }: Props) {
                 </View>
                 <View style={styles.switchRow}>
                   <Text style={styles.switchLabel}>记住密码</Text>
-                  <Switch value={rememberPassword} onValueChange={setRememberPassword} trackColor={{ true: '#6366f1' }} />
+                  <Switch value={rememberPassword} onValueChange={handleToggleRememberPassword} trackColor={{ true: '#6366f1' }} />
                 </View>
               </View>
               
