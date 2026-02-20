@@ -27,7 +27,19 @@ jobs:
 
       - name: Install dependencies
         working-directory: ./todo-mobile
-        run: npm install
+        run: npm ci
+
+      - name: Print installed dependency versions
+        working-directory: ./todo-mobile
+        run: |
+          node -v
+          npm -v
+          npm ls react-native --depth=0 || true
+          npm ls react-native-reanimated --depth=0 || true
+          npm ls react-native-gesture-handler --depth=0 || true
+          node -p "require('react-native/package.json').version" || true
+          node -p "require('react-native-reanimated/package.json').version" || true
+          node -p "require('react-native-gesture-handler/package.json').version" || true
 
       - name: Setup Java
         uses: actions/setup-java@v4
