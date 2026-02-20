@@ -19,8 +19,10 @@ async function bootstrap() {
   
   // CORS 配置
   app.enableCors({
-    origin: '*', // 生产环境允许所有来源，或指定 Vercel 域名
+    origin: true, // 允许所有来源
+    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
     credentials: true,
+    allowedHeaders: 'Content-Type, Accept, Authorization',
   });
   
   const port = process.env.PORT || 3000;
