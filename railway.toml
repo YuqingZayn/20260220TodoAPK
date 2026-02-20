@@ -1,8 +1,9 @@
 [build]
-builder = "NIXPACKS"
-buildCommand = "npm install && npm run build"
+# 关闭 Nixpacks 显式配置，尝试让 Railway 使用默认检测或自定义命令
+buildCommand = "cd todo-api && npm install && npm run build"
 
 [deploy]
-startCommand = "node dist/main.js"
+startCommand = "node todo-api/dist/main.js"
 restartPolicy = "ON_FAILURE"
 maxRestartRetries = 10
+healthcheckPath = "/"
