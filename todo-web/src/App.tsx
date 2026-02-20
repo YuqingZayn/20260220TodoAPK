@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import type { Todo } from './types/todo';
 import { getToken, removeToken } from './utils/api';
-import { todosApi, type TodoResponse, type TodoChange } from './utils/api';
+import { todosApi, type TodoChange } from './utils/api';
 import { TodoInput } from './components/TodoInput';
 import { TodoList } from './components/TodoList';
 import { LoginModal } from './components/LoginModal';
