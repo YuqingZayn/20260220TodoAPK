@@ -17,6 +17,9 @@ RUN npm install
 # 拷贝所有代码
 COPY . .
 
+# 生成 Prisma Client（必须在 build 之前）
+RUN cd todo-api && npx prisma generate
+
 # 执行构建 (代码在 /app/todo-api)
 RUN cd todo-api && npm run build
 
