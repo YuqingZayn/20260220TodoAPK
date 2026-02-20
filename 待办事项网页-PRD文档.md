@@ -56,7 +56,7 @@
  | 需求ID | 描述 | 优先级 |
  |---|---|---|
  | F1.1 | 以列表形式展示所有待办事项 | P0 |
- | F1.2 | 每条待办显示：标题、创建时间、修改时间 | P0 |
+ | F1.2 | 每条待办显示：标题、创建时间、修改时间 | P0 |![alt text](image.png)
  | F1.3 | 支持按状态筛选：全部 / 未完成 / 已完成 | P0 |
  | F1.4 | 支持按时间排序（最新优先 / 最早优先） | P1 |
  | F1.5 | 空状态展示友好提示文案 | P1 |
@@ -230,7 +230,25 @@
   Invoke-WebRequest -Uri "http://localhost:3000/" -UseBasicParsing
   ```
 
-### 11.4 调试命令速查
+### 11.4 部署架构与环境变量 (M5)
+
+#### 后端 (Railway)
+- **服务类型**: Dockerfile
+- **监听端口**: 8080 (环境变量 `PORT` 由 Railway 注入)
+- **关键变量**:
+  - `DATABASE_URL`: 引用 `${{Postgres.DATABASE_PUBLIC_URL}}`
+  - `JWT_SECRET`: 自定义密钥
+- **自动同步**: 启动时执行 `npx prisma db push`
+
+#### 前端 (Vercel)
+- **框架**: Vite + React
+- **环境变量**: `VITE_API_URL` 指向 Railway 后端域名
+
+#### 移动端 (Android)
+- **构建方式**: GitHub Actions
+- **打包要点**: 必须手动执行 `react-native bundle` 以包含离线资源
+
+### 11.5 调试命令速查
 ```powershell
 # 检查端口监听
 netstat -ano | findstr "3000"  # 后端
