@@ -11,6 +11,13 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Debug directory
+        run: |
+          ls -la
+          find . -name "package.json" -type f
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
