@@ -31,5 +31,5 @@ RUN cd todo-api && npm run build
 # 在启动前同步数据库结构 (移至 CMD 运行时执行，因为构建阶段拿不到环境变量)
 EXPOSE 8080
 
-# 启动命令：先同步数据库，再启动应用
-CMD ["sh", "-c", "cd todo-api && npx prisma db push --accept-data-loss && node dist/main.js"]
+# 启动命令：增加调试信息，显式指定 schema 路径
+CMD ["sh", "-c", "echo '开始同步数据库...' && cd todo-api && npx prisma db push --schema=prisma/schema.prisma --accept-data-loss && echo '数据库同步完成，正在启动应用...' && node dist/main.js"]
