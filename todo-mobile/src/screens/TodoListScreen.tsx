@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { View, Text, TextInput, FlatList, TouchableOpacity, StyleSheet, Alert, ActivityIndicator, SafeAreaView, Platform, StatusBar } from 'react-native';
+import React, { useState, useEffect, useRef } from 'react';
+import { View, Text, TextInput, FlatList, TouchableOpacity, StyleSheet, ActivityIndicator, SafeAreaView, Platform, StatusBar, Modal, Pressable, RefreshControl } from 'react-native';
 import { todosApi, storage, type Todo } from '../services/api';
 
 interface Props {
@@ -14,15 +14,29 @@ export function TodoListScreen({ onLogout }: Props) {
   const [priority, setPriority] = useState(3);
   const [loading, setLoading] = useState(true);
   const [lastSync, setLastSync] = useState(0);
+  const [refreshing, setRefreshing] = useState(false);
+  const [deleteId, setDeleteId] = useState<string | null>(null);
+  const syncTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
-  useEffect(() => { loadTodos(); }, []);
+  useEffect(() => {
+    loadTodos();
+
+    // 前台每 10 秒自动同步一次（准实时）
+    syncTimerRef.current = setInterval(() => {
+      syncTodos();
+    }, 10_000);
+
+    return () => {
+      if (syncTimerRef.current) clearInterval(syncTimerRef.current);
+    };
+  }, []);
 
   const loadTodos = async () => {
     try {
       const data = await todosApi.findAll();
       setTodos(data.map(t => ({ ...t, createdAt: new Date(t.createdAt).getTime(), updatedAt: new Date(t.updatedAt).getTime() })));
       setLastSync(Date.now());
-    } catch { Alert.alert('错误', '加载失败'); }
+    } catch {}
     finally { setLoading(false); }
   };
 
@@ -43,6 +57,21 @@ export function TodoListScreen({ onLogout }: Props) {
     setLastSync(Date.now());
   };
 
+  const requestDelete = (id: string) => {
+    setDeleteId(id);
+  };
+
+  const confirmDelete = async () => {
+    if (!deleteId) return;
+    const id = deleteId;
+    setDeleteId(null);
+    try {
+      await todosApi.delete(id);
+      setTodos(prev => prev.filter(t => t.id !== id));
+      syncTodos();
+    } catch {}
+  };
+
   const handleAdd = async () => {
     if (!input.trim()) return;
     try {
@@ -50,7 +79,7 @@ export function TodoListScreen({ onLogout }: Props) {
       setTodos(prev => [{ ...t, createdAt: new Date(t.createdAt).getTime(), updatedAt: new Date(t.updatedAt).getTime() }, ...prev]);
       setInput('');
       syncTodos();
-    } catch { Alert.alert('错误', '添加失败'); }
+    } catch {}
   };
 
   const handleToggle = async (id: string) => {
@@ -64,12 +93,16 @@ export function TodoListScreen({ onLogout }: Props) {
   };
 
   const handleDelete = (id: string) => {
-    Alert.alert('删除', '确定删除？', [
-      { text: '取消', style: 'cancel' },
-      { text: '删除', style: 'destructive', onPress: async () => {
-        try { await todosApi.delete(id); setTodos(prev => prev.filter(t => t.id !== id)); syncTodos(); } catch {}
-      }}
-    ]);
+    requestDelete(id);
+  };
+
+  const onPullToRefresh = async () => {
+    setRefreshing(true);
+    try {
+      await syncTodos();
+    } finally {
+      setRefreshing(false);
+    }
   };
 
   const handleLogout = async () => {
@@ -142,6 +175,7 @@ export function TodoListScreen({ onLogout }: Props) {
         keyExtractor={i => i.id} 
         renderItem={renderItem} 
         contentInsetAdjustmentBehavior="automatic"
+        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onPullToRefresh} />}
         contentContainerStyle={styles.list} 
         ListEmptyComponent={<Text style={styles.empty}>暂无待办</Text>}
       />
@@ -151,6 +185,28 @@ export function TodoListScreen({ onLogout }: Props) {
           <Text style={styles.logoutBtnText}>退出登录</Text>
         </TouchableOpacity>
       </View>
+
+      <Modal
+        transparent
+        visible={deleteId !== null}
+        animationType="fade"
+        onRequestClose={() => setDeleteId(null)}
+      >
+        <Pressable style={styles.modalBackdrop} onPress={() => setDeleteId(null)}>
+          <Pressable style={styles.modalCard} onPress={() => {}}>
+            <Text style={styles.modalTitle}>删除任务</Text>
+            <Text style={styles.modalDesc}>确定删除这条待办吗？</Text>
+            <View style={styles.modalActions}>
+              <TouchableOpacity style={styles.modalBtn} onPress={() => setDeleteId(null)} activeOpacity={0.8}>
+                <Text style={styles.modalBtnText}>取消</Text>
+              </TouchableOpacity>
+              <TouchableOpacity style={[styles.modalBtn, styles.modalBtnDanger]} onPress={confirmDelete} activeOpacity={0.8}>
+                <Text style={[styles.modalBtnText, styles.modalBtnDangerText]}>删除</Text>
+              </TouchableOpacity>
+            </View>
+          </Pressable>
+        </Pressable>
+      </Modal>
     </SafeAreaView>
   );
 }
@@ -189,4 +245,14 @@ const styles = StyleSheet.create({
   footer: { padding: 16, paddingBottom: 32 },
   logoutBtn: { paddingVertical: 12, backgroundColor: '#fff', borderRadius: 8, alignItems: 'center', borderWidth: 1, borderColor: '#ef4444' },
   logoutBtnText: { color: '#ef4444', fontSize: 14, fontWeight: '500' },
+
+  modalBackdrop: { flex: 1, backgroundColor: 'rgba(0,0,0,0.35)', justifyContent: 'center', alignItems: 'center', padding: 24 },
+  modalCard: { width: '100%', maxWidth: 360, backgroundColor: '#fff', borderRadius: 16, padding: 20, shadowColor: '#000', shadowOpacity: 0.15, shadowRadius: 12, elevation: 8 },
+  modalTitle: { fontSize: 18, fontWeight: '700', color: '#1e293b', marginBottom: 8 },
+  modalDesc: { fontSize: 14, color: '#64748b', marginBottom: 16 },
+  modalActions: { flexDirection: 'row', gap: 12, justifyContent: 'flex-end' },
+  modalBtn: { paddingVertical: 10, paddingHorizontal: 16, borderRadius: 12, backgroundColor: '#f1f5f9' },
+  modalBtnText: { color: '#1e293b', fontSize: 14, fontWeight: '600' },
+  modalBtnDanger: { backgroundColor: '#fee2e2' },
+  modalBtnDangerText: { color: '#b91c1c' },
 });

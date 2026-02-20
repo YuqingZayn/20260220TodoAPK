@@ -40,6 +40,31 @@ function App() {
     return () => window.removeEventListener('online', handleOnline);
   }, [isLoggedIn]);
 
+  // M5 同步增强：窗口重新获得焦点/从后台切回时触发同步
+  useEffect(() => {
+    if (!isLoggedIn) return;
+    const handleFocus = () => syncTodos();
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible') syncTodos();
+    };
+
+    window.addEventListener('focus', handleFocus);
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    return () => {
+      window.removeEventListener('focus', handleFocus);
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
+  }, [isLoggedIn]);
+
+  // M5 同步增强：登录态下每 10 秒轮询同步一次
+  useEffect(() => {
+    if (!isLoggedIn) return;
+    const timer = window.setInterval(() => {
+      syncTodos();
+    }, 10_000);
+    return () => window.clearInterval(timer);
+  }, [isLoggedIn]);
+
   // M3-WEB-01 本地优先 + 后台同步
   const syncTodos = async () => {
     if (!isLoggedIn) return;
@@ -120,6 +145,7 @@ function App() {
         updatedAt: new Date(result.data.updatedAt).getTime(),
       };
       setTodos([newTodo, ...todos]);
+      syncTodos();
     }
   };
 
@@ -132,6 +158,7 @@ function App() {
       setTodos(todos.map(t =>
         t.id === id ? { ...t, completed: !t.completed } : t
       ));
+      syncTodos();
     }
   };
 
@@ -141,6 +168,7 @@ function App() {
       setTodos(todos.map(t =>
         t.id === id ? { ...t, title: newTitle } : t
       ));
+      syncTodos();
     }
   };
 
@@ -150,6 +178,7 @@ function App() {
       setTodos(todos.map(t =>
         t.id === id ? { ...t, priority } : t
       ));
+      syncTodos();
     }
   };
 
@@ -157,6 +186,7 @@ function App() {
     const result = await todosApi.delete(id);
     if (result.data) {
       setTodos(todos.filter(t => t.id !== id));
+      syncTodos();
     }
   };
 
