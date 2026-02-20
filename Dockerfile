@@ -28,8 +28,8 @@ RUN cd todo-api && npx prisma generate
 # 执行构建 (代码在 /app/todo-api)
 RUN cd todo-api && npm run build
 
-# 暴露端口
-EXPOSE 3000
+# 暴露端口 (与 Railway 环境变量 PORT 保持一致)
+EXPOSE 8080
 
 # 启动命令
 CMD ["node", "todo-api/dist/main.js"]
