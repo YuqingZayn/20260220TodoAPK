@@ -53,21 +53,21 @@ export const LoginModal = ({ onLogin, onClose }: Props) => {
         return;
       }
 
-      const result = mode === 'login'
-        ? await authApi.login(email, password)
-        : await authApi.register(email, password, name || undefined);
+      const isLogin = mode === 'login';
+      const res = await (isLogin ? authApi.login(email, password) : authApi.register(email, password, name));
+      if (res.error) {
+        setError(res.error);
+        setLoading(false);
+        return;
+      }
 
-      setLoading(false);
-
-      if (result.error) {
-        setError(result.error.message || '请求失败');
-      } else if (result.data?.access_token) {
+      if (res.data?.access_token) {
         if (rememberEmail) localStorage.setItem('rememberEmail', email);
         else { localStorage.removeItem('rememberEmail'); }
         if (rememberPassword) localStorage.setItem('rememberPassword', password);
         else { localStorage.removeItem('rememberPassword'); }
-        setToken(result.data.access_token);
-        onLogin(result.data.access_token);
+        setToken(res.data.access_token);
+        onLogin(res.data.access_token);
       }
     } catch (err) {
       setLoading(false);
