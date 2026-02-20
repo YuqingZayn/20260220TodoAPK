@@ -28,6 +28,10 @@ RUN cd todo-api && npx prisma generate
 # 执行构建 (代码在 /app/todo-api)
 RUN cd todo-api && npm run build
 
+# 在启动前同步数据库结构
+# 注意：这需要 DATABASE_URL 在构建阶段可用，或者在运行时通过 CMD 执行
+RUN cd todo-api && npx prisma db push --accept-data-loss
+
 # 暴露端口 (与 Railway 环境变量 PORT 保持一致)
 EXPOSE 8080
 
