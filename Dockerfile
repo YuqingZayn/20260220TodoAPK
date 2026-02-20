@@ -2,6 +2,11 @@ FROM node:18-slim
 
 WORKDIR /app
 
+# 安装 Prisma 需要的 OpenSSL 运行时依赖
+RUN apt-get update -y \
+    && apt-get install -y --no-install-recommends openssl \
+    && rm -rf /var/lib/apt/lists/*
+
 # 调试：查看根目录内容
 RUN ls -al
 
