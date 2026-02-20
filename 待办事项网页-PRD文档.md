@@ -248,4 +248,4 @@ cd todo-web && npm run dev
 
 ---
 
-*文档版本：1.3 | 更新日期：2026-02-20 | 更新内容：添加记住账号/密码、邮箱验证码找回密码功能*
+*文档版本：1.4 | 更新日期：2026-02-20 | 更新内容：M5 公网部署（Railway 后端/Vercel Web/GitHub Actions Android）*
