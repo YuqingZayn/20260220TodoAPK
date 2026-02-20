@@ -26,7 +26,8 @@ async function bootstrap() {
   });
   
   const port = process.env.PORT || 3000;
-  await app.listen(port);
-  console.log(`🚀 API 服务运行在: http://localhost:${port}`);
+  // 必须监听 0.0.0.0 而不是 localhost，否则 Railway 外部无法访问
+  await app.listen(port, '0.0.0.0');
+  console.log(`🚀 API 服务运行在: http://0.0.0.0:${port}`);
 }
 bootstrap();
