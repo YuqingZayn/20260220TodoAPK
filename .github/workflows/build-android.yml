@@ -14,10 +14,10 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Debug directory
+      - name: Check Current Directory
         run: |
-          ls -la
-          find . -name "package.json" -type f
+          pwd
+          ls -R
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -25,9 +25,8 @@ jobs:
           node-version: '20'
 
       - name: Install dependencies
-        run: |
-          cd todo-mobile
-          npm install
+        working-directory: ./todo-mobile
+        run: npm install
 
       - name: Setup Java
         uses: actions/setup-java@v4
@@ -36,13 +35,12 @@ jobs:
           distribution: 'temurin'
 
       - name: Prebuild Android
-        run: |
-          cd todo-mobile
-          npx expo prebuild --platform android
+        working-directory: ./todo-mobile
+        run: npx expo prebuild --platform android
 
       - name: Build APK
+        working-directory: ./todo-mobile/android
         run: |
-          cd todo-mobile/android
           chmod +x gradlew
           ./gradlew assembleDebug
 
