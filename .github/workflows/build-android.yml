@@ -37,7 +37,10 @@ jobs:
 
       - name: Prebuild Android
         working-directory: ./todo-mobile
-        run: npx expo prebuild --platform android
+        run: |
+          # 清理可能存在的旧 android 目录以确保 prebuild 重新生成最新的配置
+          rm -rf android
+          npx expo prebuild --platform android
 
       - name: Build APK
         working-directory: ./todo-mobile
