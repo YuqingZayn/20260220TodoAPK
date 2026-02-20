@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { View, Text, TextInput, FlatList, TouchableOpacity, StyleSheet, ActivityIndicator, SafeAreaView, Platform, StatusBar, Modal, Pressable, RefreshControl } from 'react-native';
+import { Swipeable } from 'react-native-gesture-handler';
 import { todosApi, storage, type Todo } from '../services/api';
 
 interface Props {
@@ -110,23 +111,41 @@ export function TodoListScreen({ onLogout }: Props) {
     onLogout?.();
   };
 
+  const renderRightActions = (id: string) => {
+    return (
+      <TouchableOpacity
+        style={styles.deleteAction}
+        onPress={() => handleDelete(id)}
+        activeOpacity={0.7}
+      >
+        <Text style={styles.deleteActionText}>🗑️</Text>
+      </TouchableOpacity>
+    );
+  };
+
   const renderItem = ({ item }: { item: Todo }) => (
-    <TouchableOpacity 
-      style={[styles.item, { borderLeftColor: PRIORITY_COLORS[item.priority] }]}
-      onPress={() => handleToggle(item.id)}
-      onLongPress={() => handleDelete(item.id)}
+    <Swipeable
+      renderRightActions={() => renderRightActions(item.id)}
+      friction={2}
+      rightThreshold={40}
     >
-      <View style={styles.itemContent}>
-        <Text style={[styles.itemText, item.completed && styles.completed]}>{item.title}</Text>
-        <View style={styles.metaRow}>
-          <View style={[styles.priorityDot, { backgroundColor: PRIORITY_COLORS[item.priority] }]} />
-          <Text style={styles.itemDate}>{new Date(item.createdAt).toLocaleDateString()}</Text>
+      <TouchableOpacity 
+        style={[styles.item, { borderLeftColor: PRIORITY_COLORS[item.priority] }]}
+        onPress={() => handleToggle(item.id)}
+        onLongPress={() => handleDelete(item.id)}
+      >
+        <View style={styles.itemContent}>
+          <Text style={[styles.itemText, item.completed && styles.completed]}>{item.title}</Text>
+          <View style={styles.metaRow}>
+            <View style={[styles.priorityDot, { backgroundColor: PRIORITY_COLORS[item.priority] }]} />
+            <Text style={styles.itemDate}>{new Date(item.createdAt).toLocaleDateString()}</Text>
+          </View>
         </View>
-      </View>
-      <View style={[styles.checkbox, item.completed && styles.checkboxChecked]}>
-        {item.completed && <Text style={styles.checkmark}>✓</Text>}
-      </View>
-    </TouchableOpacity>
+        <View style={[styles.checkbox, item.completed && styles.checkboxChecked]}>
+          {item.completed && <Text style={styles.checkmark}>✓</Text>}
+        </View>
+      </TouchableOpacity>
+    </Swipeable>
   );
 
   if (loading) return <SafeAreaView style={styles.container}><ActivityIndicator size="large" style={styles.loader} /></SafeAreaView>;
@@ -255,4 +274,17 @@ const styles = StyleSheet.create({
   modalBtnText: { color: '#1e293b', fontSize: 14, fontWeight: '600' },
   modalBtnDanger: { backgroundColor: '#fee2e2' },
   modalBtnDangerText: { color: '#b91c1c' },
+  deleteAction: {
+    backgroundColor: '#ef4444',
+    justifyContent: 'center',
+    alignItems: 'center',
+    width: 70,
+    height: '88%', // 稍微小于 item 高度，避免阴影重叠
+    borderRadius: 12,
+    marginBottom: 8,
+    marginLeft: 8,
+  },
+  deleteActionText: {
+    fontSize: 24,
+  },
 });

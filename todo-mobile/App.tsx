@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, StatusBar } from 'react-native';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { LoginScreen } from './src/screens/LoginScreen';
 import { TodoListScreen } from './src/screens/TodoListScreen';
 import { storage } from './src/services/api';
@@ -29,27 +30,33 @@ export default function App() {
 
   if (loading) {
     return (
-      <View style={styles.loading}>
-        <StatusBar barStyle="dark-content" backgroundColor="#fafafa" />
-        <Text>加载中...</Text>
-      </View>
+      <GestureHandlerRootView style={styles.container}>
+        <View style={styles.loading}>
+          <StatusBar barStyle="dark-content" backgroundColor="#fafafa" />
+          <Text>加载中...</Text>
+        </View>
+      </GestureHandlerRootView>
     );
   }
 
   if (!token) {
     return (
-      <View style={styles.container}>
-        <StatusBar barStyle="dark-content" backgroundColor="#fff" />
-        <LoginScreen onLogin={handleLogin} />
-      </View>
+      <GestureHandlerRootView style={styles.container}>
+        <View style={styles.container}>
+          <StatusBar barStyle="dark-content" backgroundColor="#fff" />
+          <LoginScreen onLogin={handleLogin} />
+        </View>
+      </GestureHandlerRootView>
     );
   }
 
   return (
-    <View style={styles.container}>
-      <StatusBar barStyle="dark-content" backgroundColor="#fff" />
-      <TodoListScreen onLogout={handleLogout} />
-    </View>
+    <GestureHandlerRootView style={styles.container}>
+      <View style={styles.container}>
+        <StatusBar barStyle="dark-content" backgroundColor="#fff" />
+        <TodoListScreen onLogout={handleLogout} />
+      </View>
+    </GestureHandlerRootView>
   );
 }
 
