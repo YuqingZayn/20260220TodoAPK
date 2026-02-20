@@ -19,7 +19,7 @@ async function bootstrap() {
   
   // CORS 配置
   app.enableCors({
-    origin: ['http://localhost:5173', 'http://localhost:8083'],
+    origin: '*', // 生产环境允许所有来源，或指定 Vercel 域名
     credentials: true,
   });
   
