@@ -284,6 +284,55 @@ cd todo-web && npm run dev
   - 若出现 `:react-native-gesture-handler:compileDebugKotlin` 且 `RNGestureHandlerPackage.kt` 提示 `overrides nothing`，通常是 gesture-handler 版本过旧，需要升级（例如 `2.30.0`）。
   - `react-native-reanimated` 同样需要与 RN 版本对齐（本项目升级到 `4.2.2`）。
 
+- **从 0 复刻的最小命令序列**
+
+  - 本地（Windows / PowerShell，在 `todo-mobile`）
+    ```powershell
+    npm ci
+    npm ls react-native --depth=0
+    npm ls react-native-reanimated --depth=0
+    npm ls react-native-gesture-handler --depth=0
+
+    if (Test-Path .\android) { Remove-Item -Recurse -Force .\android }
+    npx expo prebuild --platform android
+
+    New-Item -ItemType Directory -Force .\android\app\src\main\assets | Out-Null
+    Remove-Item -Recurse -Force .\android\app\src\main\assets\* -ErrorAction SilentlyContinue
+    npx react-native bundle --platform android --dev false --entry-file index.ts --bundle-output android/app/src/main/assets/index.android.bundle --assets-dest android/app/src/main/res
+
+    cd .\android
+    ./gradlew --stop
+    ./gradlew clean assembleDebug --stacktrace --warning-mode all
+    ```
+
+  - CI（GitHub Actions / ubuntu-latest，核心步骤示意）
+    ```bash
+    cd todo-mobile
+    npm ci
+    npm ls react-native --depth=0 || true
+    npm ls react-native-reanimated --depth=0 || true
+    npm ls react-native-gesture-handler --depth=0 || true
+
+    rm -rf android
+    npx expo prebuild --platform android
+
+    mkdir -p android/app/src/main/assets
+    rm -rf android/app/src/main/assets/*
+    npx react-native bundle --platform android --dev false --entry-file index.ts --bundle-output android/app/src/main/assets/index.android.bundle --assets-dest android/app/src/main/res
+
+    cd android
+    chmod +x gradlew
+    ./gradlew --stop || true
+    ./gradlew clean assembleDebug --stacktrace --warning-mode all
+    ```
+
+- **首错定位关键词（在日志里 Ctrl+F）**
+  - `FAILURE: Build failed with an exception.`
+  - `* What went wrong:`
+  - `Execution failed for task`
+  - `e: `
+  - `error: `
+
 ---
 
 *文档版本：1.4 | 更新日期：2026-02-20 | 更新内容：M5 公网部署（Railway 后端/Vercel Web/GitHub Actions Android）*
