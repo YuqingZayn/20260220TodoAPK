@@ -264,6 +264,26 @@ cd todo-api && npm run start:dev
 cd todo-web && npm run dev
 ```
 
+### 11.6 Android APK（GitHub Actions）vibe coding 复刻要点（排障经验）
+
+- **依赖必须可复现**
+  - workflow 里使用 `npm ci`（不要用 `npm install`），确保 CI 严格按 `package-lock.json` 安装。
+  - 在构建前打印版本，避免“以为升级了但 CI 没用上”的误判：
+    - `npm ls react-native --depth=0`
+    - `npm ls react-native-reanimated --depth=0`
+    - `npm ls react-native-gesture-handler --depth=0`
+
+- **长日志定位原则**
+  - 只盯“第一处真实错误”，不要从最后一行猜。
+  - 优先定位：`FAILURE: Build failed with an exception.` 后第一条 `Execution failed for task ...`。
+  - Kotlin 报错常见前缀：`e: `；Java/Javac 常见前缀：`error: `。
+  - 网页端卡死时，用下载 logs 或保存 step 输出为本地 txt 再搜索。
+
+- **RN 版本与原生依赖对齐（本项目踩坑点）**
+  - 本项目为 `react-native@0.81.5`（Expo 54）。
+  - 若出现 `:react-native-gesture-handler:compileDebugKotlin` 且 `RNGestureHandlerPackage.kt` 提示 `overrides nothing`，通常是 gesture-handler 版本过旧，需要升级（例如 `2.30.0`）。
+  - `react-native-reanimated` 同样需要与 RN 版本对齐（本项目升级到 `4.2.2`）。
+
 ---
 
 *文档版本：1.4 | 更新日期：2026-02-20 | 更新内容：M5 公网部署（Railway 后端/Vercel Web/GitHub Actions Android）*
